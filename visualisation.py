@@ -2,6 +2,7 @@ import numpy as np
 import math as m
 from math import pi, cos, sin, acos
 import matplotlib.pyplot as plt
+import skyfield
 
 def dist(X) :
     x,y,z = X
@@ -57,12 +58,38 @@ def passage(X,P) :
     primeX = np.dot(P,X_vect)
     return((primeX[0],primeX[1],primeX[2]))
 
+def cross(a,b):
+    return (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+
+def cart2orbit(pos,vit):
+    mu = 3.986*10**14
+    energ = dist(vit)**2/2-mu/dist(pos)
+    a = -mu/(2*energ)
+    
+    h = cross(pos,vit)
+    i = m.acos(h[2]/dist(h))
+    
+    vh = cross(vit,h)
+    evec = tuple(vh[j]/mu-pos[j]/dist(pos) for j in range(3))
+    e = dist(evec)
+    
+    an = cross((0,0,1),h)
+    raan = m.acos(an[0]/dist(an))
+    raan = raan if an[1] > 0 else -raan
+    
+    arperi = m.acos((an[0]*evec[0]+an[1]*evec[1]+an[2]*evec[2])/(e*dist(an)))
+    arperi = arperi if evec[2] > 0 else -arperi
+    
+    nu = m.acos((pos[0]*evec[0]+pos[1]*evec[1]+pos[2]*evec[2])/(e*dist(pos)))
+    nu = nu if pos[0]*vit[0]+pos[1]*vit[1]+pos[2]*vit[2] > 0 else -nu
+    
+    return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
 # version = '1.0.0_2020-10-22_11-02-54'
 version = '1.0.0_2020-10-19_10-25-36' #8-years propagation
 # version = '1.0.0_2020-10-16_11-51-29' 1-year propagation
-Nlines = 365*2
+Nlines = 965
 
 Omega_deg = 214.87
 i_deg = 52.64
@@ -151,5 +178,8 @@ plt.xlabel('Time (year)')
 plt.ylabel('lambda_ECO (deg)')
 plt.xlim(0,8)
 # plt.ylim(-180,180)
+
+plt.subplot(236, projection='polar')
+plt.polar([ra*np.pi/180 for ra in angular_velocity_ECI_ra],[dec+90 for dec in angular_velocity_ECI_dec])
 
 plt.show()
