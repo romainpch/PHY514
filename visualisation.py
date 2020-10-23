@@ -1,0 +1,155 @@
+import numpy as np
+import math as m
+from math import pi, cos, sin, acos
+import matplotlib.pyplot as plt
+
+def dist(X) :
+    x,y,z = X
+    return np.sqrt(x**2 + y**2 + z**2)
+
+def sec2year(t) :
+    return t/(3600*24*365)
+
+def cart2sph(X):
+    x,y,z = X
+    rho = m.sqrt(x**2 + y**2 + z**2)
+    theta = m.acos(z/rho)
+    phi = m.atan2(y,x)
+    return((rho,theta%pi,phi%(2*pi)))
+
+def sph2cart(X) :
+    rho,theta,phi = X
+    x = rho*sin(theta)*cos(phi)
+    y = rho*sin(theta)*sin(phi)
+    z = rho*cos(theta)
+    return((x,y,z))
+
+def sph2radec(X) :
+    rho,theta,phi = X
+    delta = pi/2-theta
+    return((rho,phi,delta))
+
+def Rot_quat(X, q) :
+    '''Body frame (cartesian) to Earth Centered Inertial frame (cartesian) thanks to the quaternion of the rotation'''
+    x,y,z = X
+    X_vect = np.transpose(np.array([x,y,z]))
+
+    a,b,c,d = q
+    P= np.array([[2*(a**2+b**2)-1 , 2*(a*d+b*c) , 2*(b*d-a*c)],
+                  [2*(b*c-a*d) , 2*(a**2+c**2)-1 , 2*(a*b+c*d)],
+                  [2*(a*c+b*d) , 2*(c*d-a*b) , 2*(a**2+d**2)-1]])
+
+    a = np.dot(X_vect,P)
+    return((a[0],a[1],a[2]))
+
+def euler_passing_matrix(phi,theta,psi) :
+    '''Returns the Passing matrix P such as [x,y,z]T = P [x',y',z']T acoording to the Euler angles'''
+    P = np.array([[cos(psi)*cos(phi)-sin(psi)*cos(theta)*sin(phi) , -cos(psi)*sin(phi)-sin(psi)*cos(theta)*cos(phi) , sin(psi)*sin(theta)],
+                  [sin(psi)*cos(phi)+cos(psi)*cos(theta)*sin(phi) , -sin(psi)*sin(phi)+cos(psi)*cos(theta)*cos(phi) , -cos(psi)*sin(theta)],
+                  [sin(theta)*sin(phi) , sin(theta)*cos(phi) , cos(theta)]])
+    # return(P) 
+    return(np.linalg.inv(P))
+    
+
+def passage(X,P) :
+    x,y,z = X
+    X_vect = np.transpose(np.array([x,y,z]))
+    primeX = np.dot(P,X_vect)
+    return((primeX[0],primeX[1],primeX[2]))
+
+
+#Begining of the script
+# version = '1.0.0_2020-10-22_11-02-54'
+version = '1.0.0_2020-10-19_10-25-36' #8-years propagation
+# version = '1.0.0_2020-10-16_11-51-29' 1-year propagation
+Nlines = 365*2
+
+Omega_deg = 214.87
+i_deg = 52.64
+Omega = pi*Omega_deg/180
+inclination = pi*i_deg/180
+
+
+with open('propagation_v' + version + '.txt','r') as data_file:
+    lines = [line.strip('\n') for line in data_file.readlines()]
+
+range_numbers = range(13,13+Nlines)
+ 
+times = [sec2year(float(lines[i].split()[0])) for i in range_numbers]
+
+speeds_ECI_c = [(float(lines[i].split()[1]),float(lines[i].split()[2]),float(lines[i].split()[3])) for i in range_numbers]
+positions_ECI_c = [(float(lines[i].split()[4]),float(lines[i].split()[5]),float(lines[i].split()[6])) for i in range_numbers]
+angular_velocities_BF = [(float(lines[i].split()[7]),float(lines[i].split()[8]),float(lines[i].split()[9])) for i in range_numbers]
+orientations_quaternion = [(float(lines[i].split()[10]),float(lines[i].split()[11]),float(lines[i].split()[12]),float(lines[i].split()[13])) for i in range_numbers]
+
+periods = []
+angular_velocity_ECI_ra = []
+angular_velocity_ECI_dec = []
+angular_velocity_ECO_lambda = []
+angular_velocity_ECO_theta = []
+
+bla_theta = []
+bla_lambda = []
+
+for i in range(Nlines) :
+    angular_velocity_BF = angular_velocities_BF[i]
+    quaternion = orientations_quaternion[i]
+    periods += [2*pi/dist(angular_velocity_BF)]
+
+    angular_velocity_ECI_c = Rot_quat(angular_velocity_BF,quaternion)
+    angular_velocity_ECI_radec = sph2radec(cart2sph(angular_velocity_ECI_c))
+    angular_velocity_ECI_ra += [180.*angular_velocity_ECI_radec[1]/pi]
+    angular_velocity_ECI_dec += [180.*angular_velocity_ECI_radec[2]/pi]
+
+    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , sin(Omega/2))) , (cos(inclination/2) , sin(inclination/2) , 0 , 0 ) )
+    # angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(-inclination/2) , sin(-inclination/2) , 0 , 0)) , (cos(-Omega/2) , 0 , 0 , sin(-Omega/2) ) )
+    angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
+    angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
+    angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
+
+        #Another way to do so with euler angles
+    P = euler_passing_matrix(Omega,inclination,0.)
+    bla = passage(angular_velocity_ECI_c,P)
+    bla_sph = cart2sph(bla)
+    bla_theta += [180.*bla_sph[1]/pi] 
+    bla_lambda += [180.*bla_sph[2]/pi - 120]
+
+
+
+plt.subplot(231)
+plt.plot(times, periods)
+plt.yscale('log')
+plt.xlabel('Time (year)')
+plt.ylabel('Period (s)')
+
+plt.subplot(232)
+plt.plot(times, angular_velocity_ECI_dec)
+plt.xlabel('Time (year)')
+plt.ylabel('Declination (deg)')
+plt.xlim(0,8)
+plt.ylim(-90,10)
+
+plt.subplot(233)
+plt.plot(times, angular_velocity_ECI_ra)
+plt.xlabel('Time (year)')
+plt.ylabel('Right Ascension (deg)')
+plt.xlim(0,8)
+plt.ylim(0,360)
+
+plt.subplot(234)
+plt.plot(times, angular_velocity_ECO_theta)
+plt.plot(times,bla_theta)
+plt.xlabel('Time (year)')
+plt.ylabel('theta_ECO (deg)')
+plt.xlim(0,8)
+# plt.ylim(120,180)
+
+plt.subplot(235)
+plt.plot(times, angular_velocity_ECO_lambda)
+plt.plot(times,bla_lambda)
+plt.xlabel('Time (year)')
+plt.ylabel('lambda_ECO (deg)')
+plt.xlim(0,8)
+# plt.ylim(-180,180)
+
+plt.show()
