@@ -50,6 +50,11 @@ def affichage(list_surf):   #Realise l'affichage d'une triangulation
         x = [surf.v1[0], surf.v2[0],surf.v3[0]]
         y = [surf.v1[1], surf.v2[1],surf.v3[1]]
         z = [surf.v1[2], surf.v2[2],surf.v3[2]]
+        ####################################################################################################
+        #Je ne comprend pas pourquoi ne pas faire directement :
+        #ax.plot_trisurf(x,y,z,linewidth=1,antialiased = True)
+        # plot_trisurf ne marche pas avec le premier modele de cylindre (plot marche) voir l.101-103
+        ####################################################################################################
         c1,c2 = 0.999, 0.998
         s1,s2 = np.sqrt(1-c1**2),np.sqrt(1-c2**2)
         surface = np.array([[1,0,0],[0,c1,-s1],[0,s1,c1]]) @ np.array([[c2,0,s2],[0,1,0],[-s2,0,c2]]) @ np.array([x,y,z])
@@ -79,6 +84,35 @@ def sphere(radius): #Renvoie la triangulation en 264 surfaces d'une sphere de ra
         for i in range(12):
             l_surf.append(Surface(m_vertex[j][i],m_vertex[j][i+1],m_vertex[j+1][i]))
             l_surf.append(Surface(m_vertex[j][i+1],m_vertex[j+1][i+1],m_vertex[j+1][i]))
+    return l_surf
+
+def cylindre(height, radius,N): #Renvoie la triangulation en 4*N surfaces du cylindre de hauteur height et de rayon radius
+    l_surf = []
+    for k in range(N): 
+        #top triangles :
+        l_surf.append(Surface((0.,0.,height) , (radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),height) ,(radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),height)))
+        #bottom triangles :
+        l_surf.append(Surface((0.,0.,0.) , (radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),0.) ,(radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.)))    
+        #face triangles
+        l_surf.append(Surface((radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),0.) , (radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.), (radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),height))) 
+        l_surf.append(Surface((radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),height) , (radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),height), (radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.) )) 
+
+        ####################################################################################################
+        #Ci dessous, un autre model (le polygones top subit une rotation de pi/N rad par rapport à bottom )
+        # Ce modele permet de mieux gérer le plot_trisurf mais sera sans doutes moins performant que le modèle ci-dessus
+        # car les faces n'ont pas leur vecteur normal dans le plan orthogonal à l'axe z
+        ####################################################################################################
+
+        #l_surf.append(Surface((0.,0.,height) , (radius*np.cos(2*(k+0.5)*pi)/N,radius*np.sin(2*(k+0.5)*pi)/N,height) ,(radius*np.cos(2*(k+1.5)*pi/N),radius*np.sin(2*(k+1.5)*pi/N),height)))
+ 
+        # #face triangles
+        # l_surf.append(Surface((radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),0.) , (radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.), (radius*np.cos(2*(k+0.5)*pi/N),radius*np.sin(2*(k+0.5)*pi/N),height))) 
+        
+        # l_surf.append(Surface((radius*np.cos(2*(k+0.5)*pi/N),radius*np.sin(2*(k+0.5)*pi/N),height) , (radius*np.cos(2*(k+1.5)*pi/N),radius*np.sin(2*(k+1.5)*pi/N),height), (radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.) )) 
+        
+        #         #bottom triangles :
+        # l_surf.append(Surface((0.,0.,0.) , (radius*np.cos(2*k*pi/N),radius*np.sin(2*k*pi/N),0.) ,(radius*np.cos(2*(k+1)*pi/N),radius*np.sin(2*(k+1)*pi/N),0.)))   
+        
     return l_surf
 
 def export(list_surf,filename): #Ecrit un fichier pour une geometrie donnee au format D-SPOSE
