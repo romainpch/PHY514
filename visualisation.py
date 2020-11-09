@@ -85,17 +85,45 @@ def cart2orbit(pos,vit):
     
     return (a,i,e,raan,arperi,nu)
 
+#def cross(x,y) :
+#     '''vectoial product of x and y'''
+#     return((x[1]*y[2]-x[2]*y[1] , x[2]*y[0]-x[0]*y[2] , x[0]*y[1]-x[1]*y[0]))
+
+# def dot(x,y) :
+#     '''scalar product of x and y'''
+#     return x[0]*y[0]+x[1]*y[1]+x[2]*y[2]
+
+# def prod(a,x) :
+#     return((a*x[0],a*x[1],a*x[2]))
+
+# def minus(x,y) :
+#     return((x[0]-y[0] , x[1]-y[1] , x[2]-y[2]))
+
+# def OrbitalElements(r,rdot) :
+#     mu = 398600.4418
+
+#     ene = (dist(rdot)**2)/2.0 - mu/dist(r)
+#     a = -mu/(2*ene)
+#     h = cross(r,rdot)
+#     i = acos(dot(h,(0.0,0.0,1.0))/dist(h))
+#     p = (dist(h)**2)/mu
+#     e = sqrt(1.0-p/a)
+
+#     eVec = minus(prod((1.0/mu),cross(rdot,h)),prod(1.0/dist(r),r))
+#     nHat = cross((0.0,0.0,1.0),h)/dist(cross((0.0,0.0,1.0),h))
+#     OmeTemp = acos(dot(nHat,(1.0,0.0,0.0)))
+#     if nHat[1] < 0.0 :
+#         Ome = -OmeTemp
+#     else :
+#         Ome = OmeTemp
+#     return [Ome, i]
+
+
 #Begining of the script
 # version = '1.0.0_2020-10-22_11-02-54'
 version = '1.0.0_2020-10-19_10-25-36' #8-years propagation
 # version = '1.0.0_2020-10-16_11-51-29' 1-year propagation
 Nlines = 965
-
-Omega_deg = 214.87
-i_deg = 52.64
-Omega = pi*Omega_deg/180
-inclination = pi*i_deg/180
-
 
 with open('propagation_v' + version + '.txt','r') as data_file:
     lines = [line.strip('\n') for line in data_file.readlines()]
@@ -127,8 +155,12 @@ for i in range(Nlines) :
     angular_velocity_ECI_radec = sph2radec(cart2sph(angular_velocity_ECI_c))
     angular_velocity_ECI_ra += [180.*angular_velocity_ECI_radec[1]/pi]
     angular_velocity_ECI_dec += [180.*angular_velocity_ECI_radec[2]/pi]
+    
+    r = positions_ECI_c[i]
+    rdot = speeds_ECI_c[i]
+    Omega , inc = OrbitalElements(r, rdot)
 
-    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , sin(Omega/2))) , (cos(inclination/2) , sin(inclination/2) , 0 , 0 ) )
+    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , sin(Omega/2))) , (cos(inc/2) , sin(inc/2) , 0 , 0 ) )
     # angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(-inclination/2) , sin(-inclination/2) , 0 , 0)) , (cos(-Omega/2) , 0 , 0 , sin(-Omega/2) ) )
     angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
     angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
