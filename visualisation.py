@@ -34,7 +34,6 @@ def Rot_quat(X, q) :
     '''Body frame (cartesian) to Earth Centered Inertial frame (cartesian) thanks to the quaternion of the rotation'''
     x,y,z = X
     X_vect = np.transpose(np.array([x,y,z]))
-
     a,b,c,d = q
     P= np.array([[2*(a**2+b**2)-1 , 2*(a*d+b*c) , 2*(b*d-a*c)],
                   [2*(b*c-a*d) , 2*(a**2+c**2)-1 , 2*(a*b+c*d)],
@@ -85,45 +84,17 @@ def cart2orbit(pos,vit):
     
     return (a,i,e,raan,arperi,nu)
 
-#def cross(x,y) :
-#     '''vectoial product of x and y'''
-#     return((x[1]*y[2]-x[2]*y[1] , x[2]*y[0]-x[0]*y[2] , x[0]*y[1]-x[1]*y[0]))
-
-# def dot(x,y) :
-#     '''scalar product of x and y'''
-#     return x[0]*y[0]+x[1]*y[1]+x[2]*y[2]
-
-# def prod(a,x) :
-#     return((a*x[0],a*x[1],a*x[2]))
-
-# def minus(x,y) :
-#     return((x[0]-y[0] , x[1]-y[1] , x[2]-y[2]))
-
-# def OrbitalElements(r,rdot) :
-#     mu = 398600.4418
-
-#     ene = (dist(rdot)**2)/2.0 - mu/dist(r)
-#     a = -mu/(2*ene)
-#     h = cross(r,rdot)
-#     i = acos(dot(h,(0.0,0.0,1.0))/dist(h))
-#     p = (dist(h)**2)/mu
-#     e = sqrt(1.0-p/a)
-
-#     eVec = minus(prod((1.0/mu),cross(rdot,h)),prod(1.0/dist(r),r))
-#     nHat = cross((0.0,0.0,1.0),h)/dist(cross((0.0,0.0,1.0),h))
-#     OmeTemp = acos(dot(nHat,(1.0,0.0,0.0)))
-#     if nHat[1] < 0.0 :
-#         Ome = -OmeTemp
-#     else :
-#         Ome = OmeTemp
-#     return [Ome, i]
-
-
 #Begining of the script
 # version = '1.0.0_2020-10-22_11-02-54'
-version = '1.0.0_2020-10-19_10-25-36' #8-years propagation
+version = '1.0.0_2020-10-23_09-09-49' #8-years propagation
 # version = '1.0.0_2020-10-16_11-51-29' 1-year propagation
-Nlines = 965
+Nlines = 2920
+
+Omega_deg = 214.87
+i_deg = 52.64
+Omega = pi*Omega_deg/180
+inclination = pi*i_deg/180
+
 
 with open('propagation_v' + version + '.txt','r') as data_file:
     lines = [line.strip('\n') for line in data_file.readlines()]
@@ -155,13 +126,11 @@ for i in range(Nlines) :
     angular_velocity_ECI_radec = sph2radec(cart2sph(angular_velocity_ECI_c))
     angular_velocity_ECI_ra += [180.*angular_velocity_ECI_radec[1]/pi]
     angular_velocity_ECI_dec += [180.*angular_velocity_ECI_radec[2]/pi]
-    
-    r = positions_ECI_c[i]
-    rdot = speeds_ECI_c[i]
-    Omega , inc = OrbitalElements(r, rdot)
 
-    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , sin(Omega/2))) , (cos(inc/2) , sin(inc/2) , 0 , 0 ) )
-    # angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(-inclination/2) , sin(-inclination/2) , 0 , 0)) , (cos(-Omega/2) , 0 , 0 , sin(-Omega/2) ) )
+    _,inclination,_,Omega,_,_=cart2orbit(positions_ECI_c[i], speeds_ECI_c[i])
+
+    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , -sin(Omega/2))) , (cos(inclination/2) , -    sin(inclination/2) , 0 , 0 ) )
+    #angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(-inclination/2) , sin(-inclination/2) , 0 , 0)) , (cos(-Omega/2) , 0 , 0 , sin(-Omega/2) ) )
     angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
     angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
     angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
@@ -197,7 +166,7 @@ plt.ylim(0,360)
 
 plt.subplot(234)
 plt.plot(times, angular_velocity_ECO_theta)
-plt.plot(times,bla_theta)
+#plt.plot(times,bla_theta)
 plt.xlabel('Time (year)')
 plt.ylabel('theta_ECO (deg)')
 plt.xlim(0,8)
@@ -205,13 +174,13 @@ plt.xlim(0,8)
 
 plt.subplot(235)
 plt.plot(times, angular_velocity_ECO_lambda)
-plt.plot(times,bla_lambda)
+#plt.plot(times,bla_lambda)
 plt.xlabel('Time (year)')
 plt.ylabel('lambda_ECO (deg)')
 plt.xlim(0,8)
 # plt.ylim(-180,180)
 
 plt.subplot(236, projection='polar')
-plt.polar([ra*np.pi/180 for ra in angular_velocity_ECI_ra],[dec+90 for dec in angular_velocity_ECI_dec])
+plt.polar([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta])
 
 plt.show()
