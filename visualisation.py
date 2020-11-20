@@ -42,21 +42,6 @@ def Rot_quat(X, q) :
     a = np.dot(X_vect,P)
     return((a[0],a[1],a[2]))
 
-def euler_passing_matrix(phi,theta,psi) :
-    '''Returns the Passing matrix P such as [x,y,z]T = P [x',y',z']T acoording to the Euler angles'''
-    P = np.array([[cos(psi)*cos(phi)-sin(psi)*cos(theta)*sin(phi) , -cos(psi)*sin(phi)-sin(psi)*cos(theta)*cos(phi) , sin(psi)*sin(theta)],
-                  [sin(psi)*cos(phi)+cos(psi)*cos(theta)*sin(phi) , -sin(psi)*sin(phi)+cos(psi)*cos(theta)*cos(phi) , -cos(psi)*sin(theta)],
-                  [sin(theta)*sin(phi) , sin(theta)*cos(phi) , cos(theta)]])
-    # return(P) 
-    return(np.linalg.inv(P))
-    
-
-def passage(X,P) :
-    x,y,z = X
-    X_vect = np.transpose(np.array([x,y,z]))
-    primeX = np.dot(P,X_vect)
-    return((primeX[0],primeX[1],primeX[2]))
-
 def cross(a,b):
     return (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
 
@@ -85,9 +70,7 @@ def cart2orbit(pos,vit):
     return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
-# version = '1.0.0_2020-10-22_11-02-54'
-version = '1.0.0_2020-10-23_09-09-49' #8-years propagation
-# version = '1.0.0_2020-10-16_11-51-29' 1-year propagation
+version = '1.0.0_2020-10-22_11-02-54' #8-years propagation
 Nlines = 2920
 
 Omega_deg = 214.87
@@ -130,57 +113,54 @@ for i in range(Nlines) :
     _,inclination,_,Omega,_,_=cart2orbit(positions_ECI_c[i], speeds_ECI_c[i])
 
     angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , -sin(Omega/2))) , (cos(inclination/2) , -    sin(inclination/2) , 0 , 0 ) )
-    #angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(-inclination/2) , sin(-inclination/2) , 0 , 0)) , (cos(-Omega/2) , 0 , 0 , sin(-Omega/2) ) )
     angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
     angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
     angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
 
-        #Another way to do so with euler angles
-    P = euler_passing_matrix(Omega,inclination,0.)
-    bla = passage(angular_velocity_ECI_c,P)
-    bla_sph = cart2sph(bla)
-    bla_theta += [180.*bla_sph[1]/pi] 
-    bla_lambda += [180.*bla_sph[2]/pi - 120]
 
 
+fig1 = plt.figure(figsize=(10,3))
 
-plt.subplot(231)
-plt.plot(times, periods)
+plt.subplot(131)
+plt.plot(times, periods,linewidth=1.)
 plt.yscale('log')
 plt.xlabel('Time (year)')
 plt.ylabel('Period (s)')
 
-plt.subplot(232)
-plt.plot(times, angular_velocity_ECI_dec)
+plt.subplot(132)
+plt.plot(times, angular_velocity_ECI_dec,linewidth=1.)
 plt.xlabel('Time (year)')
 plt.ylabel('Declination (deg)')
 plt.xlim(0,8)
 plt.ylim(-90,10)
 
-plt.subplot(233)
-plt.plot(times, angular_velocity_ECI_ra)
+plt.subplot(133)
+plt.plot(times, angular_velocity_ECI_ra,linewidth=1.)
 plt.xlabel('Time (year)')
 plt.ylabel('Right Ascension (deg)')
 plt.xlim(0,8)
 plt.ylim(0,360)
 
-plt.subplot(234)
-plt.plot(times, angular_velocity_ECO_theta)
-#plt.plot(times,bla_theta)
+plt.tight_layout()
+plt.savefig('./figures/LAGEOS-2_inertial.png')
+
+fig2 = plt.figure(figsize=(10,3))
+
+plt.subplot(131)
+plt.plot(times, angular_velocity_ECO_theta,linewidth=1.)
 plt.xlabel('Time (year)')
 plt.ylabel('theta_ECO (deg)')
 plt.xlim(0,8)
-# plt.ylim(120,180)
 
-plt.subplot(235)
-plt.plot(times, angular_velocity_ECO_lambda)
-#plt.plot(times,bla_lambda)
+plt.subplot(132)
+plt.plot(times, angular_velocity_ECO_lambda,linewidth=1.)
 plt.xlabel('Time (year)')
 plt.ylabel('lambda_ECO (deg)')
 plt.xlim(0,8)
-# plt.ylim(-180,180)
+plt.ylim(0,360)
 
-plt.subplot(236, projection='polar')
-plt.polar([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta])
+plt.subplot(133, projection='polar')
+plt.polar([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=1.)
 
-plt.show()
+plt.tight_layout()
+plt.savefig('./figures/LAGEOS-2_orbital.png')
