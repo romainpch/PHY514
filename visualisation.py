@@ -4,7 +4,9 @@ from math import pi, cos, sin, acos
 import matplotlib.pyplot as plt
 import skyfield
 
+
 def dist(X) :
+    '''Returns the EUclidian distance of X to (0,0,0)'''
     x,y,z = X
     return np.sqrt(x**2 + y**2 + z**2)
 
@@ -118,7 +120,7 @@ for i in range(Nlines) :
     angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
 
 
-
+#Inertial frame figure
 fig1 = plt.figure(figsize=(10,3))
 
 plt.subplot(131)
@@ -144,6 +146,8 @@ plt.ylim(0,360)
 plt.tight_layout()
 plt.savefig('./figures/LAGEOS-2_inertial.png')
 
+
+#Orbital frame figure
 fig2 = plt.figure(figsize=(10,3))
 
 plt.subplot(131)
