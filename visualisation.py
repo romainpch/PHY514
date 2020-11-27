@@ -2,7 +2,7 @@ import numpy as np
 import math as m
 from math import pi, cos, sin, acos
 import matplotlib.pyplot as plt
-import skyfield
+#import skyfield
 
 
 def dist(X) :
@@ -72,7 +72,8 @@ def cart2orbit(pos,vit):
     return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
-version = '1.0.0_2020-10-22_11-02-54' #8-years propagation
+version = '1.0.0_2020-10-22_11-02-54' #8-years propagation - step 1s
+#version = '1.0.0_2020-11-14_21-24-22' #8-years propagation - step 0.1s
 Nlines = 2920
 
 Omega_deg = 214.87
