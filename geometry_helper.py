@@ -138,4 +138,4 @@ def export(list_surf,filename): #Ecrit un fichier pour une geometrie donnee au f
                     output.write('\t')
             output.write('0.3750000000000000\t0.2010000000000000\t0.4240000000000000\t0.095\t0.025\t0.880\n')   #Valeur arbitraire des coefficients de reflexion
 
-affichage(box(2,3,4))
+affichage(box(10,5,26))
