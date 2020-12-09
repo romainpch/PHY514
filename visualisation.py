@@ -208,11 +208,11 @@ plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
 plt.subplot(325)
-plt.plot(times, [2.58 + a[2] for a in angular_velocities_BF],linewidth=1.)
+plt.plot(times, [a[2] for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_z')
 plt.subplot(326)
-plt.plot(times[Nlines-87:], [2.58 + a[1] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
+plt.plot(times[Nlines-87:], [ a[1] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
