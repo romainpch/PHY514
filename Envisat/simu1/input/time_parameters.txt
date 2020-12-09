@@ -1,7 +1,0 @@
-%%%%% Time Parameters
-% Line 1 is propagation length (Days / Hours / Minutes / Seconds)
-% Line 2 is output step (Days / Hours / Minutes / Seconds)
-% Line 3 is time step in seconds
-1825	0	0	0
-1	0	0	0
-1

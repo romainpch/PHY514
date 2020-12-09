@@ -13,6 +13,9 @@ def dist(X) :
 def sec2year(t) :
     return t/(3600*24*365)
 
+def sec2days(t) :
+    return t/(3600*24)
+
 def cart2sph(X):
     x,y,z = X
     rho = m.sqrt(x**2 + y**2 + z**2)
@@ -72,109 +75,148 @@ def cart2orbit(pos,vit):
     return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
-version = '1.0.0_2020-10-22_11-02-54' #8-years propagation - step 1s
+propa = 'propagation_v1.0.0_2020-12-09_15-44-03.txt'
+Path = './Simulations/Envisat/Fig16_OrtizGomez/'
+Nlines = 20*24*6
+FigDestination = './figures/Envisat/Fig16_OrtizGomez/'
+#version = '1.0.0_2020-10-22_11-02-54' #8-years propagation - step 1s
 #version = '1.0.0_2020-11-14_21-24-22' #8-years propagation - step 0.1s
-Nlines = 2920
-
-Omega_deg = 214.87
-i_deg = 52.64
-Omega = pi*Omega_deg/180
-inclination = pi*i_deg/180
 
 
-with open('propagation_v' + version + '.txt','r') as data_file:
+# Omega_deg = 214.87
+# i_deg = 52.64
+# Omega = pi*Omega_deg/180
+# inclination = pi*i_deg/180
+
+
+with open(Path + propa,'r') as data_file:
     lines = [line.strip('\n') for line in data_file.readlines()]
 
 range_numbers = range(13,13+Nlines)
  
-times = [sec2year(float(lines[i].split()[0])) for i in range_numbers]
+# times = [sec2year(float(lines[i].split()[0])) for i in range_numbers]
+times = [sec2days(float(lines[i].split()[0])) for i in range_numbers]
 
 speeds_ECI_c = [(float(lines[i].split()[1]),float(lines[i].split()[2]),float(lines[i].split()[3])) for i in range_numbers]
 positions_ECI_c = [(float(lines[i].split()[4]),float(lines[i].split()[5]),float(lines[i].split()[6])) for i in range_numbers]
 angular_velocities_BF = [(float(lines[i].split()[7]),float(lines[i].split()[8]),float(lines[i].split()[9])) for i in range_numbers]
 orientations_quaternion = [(float(lines[i].split()[10]),float(lines[i].split()[11]),float(lines[i].split()[12]),float(lines[i].split()[13])) for i in range_numbers]
 
-periods = []
-angular_velocity_ECI_ra = []
-angular_velocity_ECI_dec = []
-angular_velocity_ECO_lambda = []
-angular_velocity_ECO_theta = []
+# periods = []
+# angular_velocity_ECI_ra = []
+# angular_velocity_ECI_dec = []
+# angular_velocity_ECO_lambda = []
+# angular_velocity_ECO_theta = []
 
-bla_theta = []
-bla_lambda = []
+# bla_theta = []
+# bla_lambda = []
 
-for i in range(Nlines) :
-    angular_velocity_BF = angular_velocities_BF[i]
-    quaternion = orientations_quaternion[i]
-    periods += [2*pi/dist(angular_velocity_BF)]
+# for i in range(Nlines) :
+#     angular_velocity_BF = angular_velocities_BF[i]
+#     quaternion = orientations_quaternion[i]
+#     periods += [2*pi/dist(angular_velocity_BF)]
 
-    angular_velocity_ECI_c = Rot_quat(angular_velocity_BF,quaternion)
-    angular_velocity_ECI_radec = sph2radec(cart2sph(angular_velocity_ECI_c))
-    angular_velocity_ECI_ra += [180.*angular_velocity_ECI_radec[1]/pi]
-    angular_velocity_ECI_dec += [180.*angular_velocity_ECI_radec[2]/pi]
+#     angular_velocity_ECI_c = Rot_quat(angular_velocity_BF,quaternion)
+#     angular_velocity_ECI_radec = sph2radec(cart2sph(angular_velocity_ECI_c))
+#     angular_velocity_ECI_ra += [180.*angular_velocity_ECI_radec[1]/pi]
+#     angular_velocity_ECI_dec += [180.*angular_velocity_ECI_radec[2]/pi]
 
-    _,inclination,_,Omega,_,_=cart2orbit(positions_ECI_c[i], speeds_ECI_c[i])
+#     _,inclination,_,Omega,_,_=cart2orbit(positions_ECI_c[i], speeds_ECI_c[i])
 
-    angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , -sin(Omega/2))) , (cos(inclination/2) , -    sin(inclination/2) , 0 , 0 ) )
-    angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
-    angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
-    angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
-
-
-#Inertial frame figure
-fig1 = plt.figure(figsize=(10,3))
-
-plt.subplot(131)
-plt.plot(times, periods,linewidth=1.)
-plt.yscale('log')
-plt.xlabel('Time (year)')
-plt.ylabel('Period (s)')
-
-plt.subplot(132)
-plt.plot(times, angular_velocity_ECI_dec,linewidth=1.)
-plt.xlabel('Time (year)')
-plt.ylabel('Declination (deg)')
-plt.xlim(0,8)
-plt.ylim(-90,10)
-
-plt.subplot(133)
-plt.plot(times, angular_velocity_ECI_ra,linewidth=1.)
-plt.xlabel('Time (year)')
-plt.ylabel('Right Ascension (deg)')
-plt.xlim(0,8)
-plt.ylim(0,360)
-
-plt.tight_layout()
-plt.savefig('./figures/LAGEOS-2_inertial.png')
+#     angular_velocity_ECO_c = Rot_quat(Rot_quat(angular_velocity_ECI_c, (cos(Omega/2) , 0 , 0 , -sin(Omega/2))) , (cos(inclination/2) , -    sin(inclination/2) , 0 , 0 ) )
+#     angular_velocity_ECO_sph = cart2sph(angular_velocity_ECO_c)
+#     angular_velocity_ECO_theta += [180.*angular_velocity_ECO_sph[1]/pi] 
+#     angular_velocity_ECO_lambda += [180.*angular_velocity_ECO_sph[2]/pi]
 
 
-#Orbital frame figure
-fig2 = plt.figure(figsize=(10,3))
+# #Inertial frame figure
+# fig1 = plt.figure(figsize=(10,3))
 
-plt.subplot(131)
-plt.plot(times, angular_velocity_ECO_theta,linewidth=1.)
-plt.xlabel('Time (year)')
-plt.ylabel('theta_ECO (deg)')
-plt.xlim(0,8)
+# plt.subplot(131)
+# plt.plot(times, periods,linewidth=1.)
+# plt.yscale('log')
+# plt.xlabel('Time (year)')
+# plt.ylabel('Period (s)')
 
-plt.subplot(132)
-plt.plot(times, angular_velocity_ECO_lambda,linewidth=1.)
-plt.xlabel('Time (year)')
-plt.ylabel('lambda_ECO (deg)')
-plt.xlim(0,8)
+# plt.subplot(132)
+# plt.plot(times, angular_velocity_ECI_dec,linewidth=1.)
+# plt.xlabel('Time (year)')
+# plt.ylabel('Declination (deg)')
+# # plt.xlim(0,8)
+# plt.ylim(-90,10)
+
+# plt.subplot(133)
+# plt.plot(times, angular_velocity_ECI_ra,linewidth=1.)
+# plt.xlabel('Time (year)')
+# plt.ylabel('Right Ascension (deg)')
+# # plt.xlim(0,8)
 # plt.ylim(0,360)
 
-ax = plt.subplot(133, projection='polar')
-ax.plot([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=0.8)
-ax.set_rlabel_position(90)
-ax.set_rlim(0,90)
-ax.text(np.radians(90+10),ax.get_rmax()*3./4.,'theta_ECO',rotation=90,ha='center',va='center',size=6)
-ax.text(np.radians(20),ax.get_rmax()*1.1,'lambda_ECO',rotation=-70,ha='center',va='center',size=6)
-ax.set_yticklabels(['165°','150°','135°','120°','105°'],size=6)
+#plt.tight_layout()
+#plt.savefig(FigDestination + 'LAGEOS-2_inertial.png')
 
-# plt.polar([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=1.)
-# plt.xlabel('lambda_ECO')
-# plt.ylabel('theta_ECO')
+# #Orbital frame figure
+# fig2 = plt.figure(figsize=(10,3))
+
+# plt.subplot(131)
+# plt.plot(times, angular_velocity_ECO_theta,linewidth=1.)
+# plt.xlabel('Time (year)')
+# plt.ylabel('theta_ECO (deg)')
+# # plt.xlim(0,8)
+
+# plt.subplot(132)
+# plt.plot(times, angular_velocity_ECO_lambda,linewidth=1.)
+# plt.xlabel('Time (year)')
+# plt.ylabel('lambda_ECO (deg)')
+# # plt.xlim(0,8)
+# # plt.ylim(0,360)
+
+# ax = plt.subplot(133, projection='polar')
+# ax.plot([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=0.8)
+# ax.set_rlabel_position(90)
+# ax.set_rlim(0,90)
+# ax.text(np.radians(90+10),ax.get_rmax()*3./4.,'theta_ECO',rotation=90,ha='center',va='center',size=6)
+# ax.text(np.radians(20),ax.get_rmax()*1.1,'lambda_ECO',rotation=-70,ha='center',va='center',size=6)
+# ax.set_yticklabels(['165°','150°','135°','120°','105°'],size=6)
+
+# # plt.polar([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=1.)
+# # plt.xlabel('lambda_ECO')
+# # plt.ylabel('theta_ECO')
+
+#plt.tight_layout()
+#plt.savefig(FigDestination + 'LAGEOS-2_orbital.png')
+
+
+fig1 = plt.figure(figsize=(10,8))
+
+plt.subplot(321)
+plt.plot(times, [a[0] for a in angular_velocities_BF],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_x')
+plt.subplot(322)
+plt.plot(times[Nlines-87:], [a[0] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_x (ZOOM)')
+
+plt.subplot(323)
+plt.plot(times, [a[1] for a in angular_velocities_BF],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_y')
+plt.subplot(324)
+plt.plot(times[Nlines-8:], [a[1] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_y (ZOOM)')
+
+plt.subplot(325)
+plt.plot(times, [a[2] for a in angular_velocities_BF],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_z')
+plt.subplot(326)
+plt.plot(times[Nlines-8:], [a[1] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
+plt.xlabel('Time (Days)')
+plt.ylabel('Omega_y (ZOOM)')
+
 
 plt.tight_layout()
-plt.savefig('./figures/LAGEOS-2_orbital.png')
+plt.savefig(FigDestination + 'Envisat_Fig16_Velocity.png')
+
