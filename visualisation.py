@@ -75,7 +75,7 @@ def cart2orbit(pos,vit):
     return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
-propa = 'propagation_v1.0.0_2020-12-09_15-44-03.txt'
+propa = 'propagation_v1.0.0_2020-12-09_16-15-44.txt'
 Path = './Simulations/Envisat/Fig16_OrtizGomez/'
 Nlines = 20*24*6
 FigDestination = './figures/Envisat/Fig16_OrtizGomez/'
@@ -194,7 +194,7 @@ plt.plot(times, [a[0] for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_x')
 plt.subplot(322)
-plt.plot(times[Nlines-87:], [a[0] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
+plt.plot(times[Nlines-8:], [a[0] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_x (ZOOM)')
 
@@ -208,11 +208,11 @@ plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
 plt.subplot(325)
-plt.plot(times, [a[2] for a in angular_velocities_BF],linewidth=1.)
+plt.plot(times, [2.58 + a[2] for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_z')
 plt.subplot(326)
-plt.plot(times[Nlines-8:], [a[1] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
+plt.plot(times[Nlines-87:], [2.58 + a[1] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
