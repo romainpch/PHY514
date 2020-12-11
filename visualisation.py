@@ -75,9 +75,9 @@ def cart2orbit(pos,vit):
     return (a,i,e,raan,arperi,nu)
 
 #Begining of the script
-propa = 'propagation_v1.0.0_2020-12-09_16-15-44.txt'
+propa = 'propagation_v1.0.0_2020-12-09_22-31-07.txt'
 Path = './Simulations/Envisat/Fig16_OrtizGomez/'
-Nlines = 20*24*6
+Nlines = 20*24*60
 FigDestination = './figures/Envisat/Fig16_OrtizGomez/'
 #version = '1.0.0_2020-10-22_11-02-54' #8-years propagation - step 1s
 #version = '1.0.0_2020-11-14_21-24-22' #8-years propagation - step 0.1s
@@ -102,7 +102,7 @@ positions_ECI_c = [(float(lines[i].split()[4]),float(lines[i].split()[5]),float(
 angular_velocities_BF = [(float(lines[i].split()[7]),float(lines[i].split()[8]),float(lines[i].split()[9])) for i in range_numbers]
 orientations_quaternion = [(float(lines[i].split()[10]),float(lines[i].split()[11]),float(lines[i].split()[12]),float(lines[i].split()[13])) for i in range_numbers]
 
-# periods = []
+#periods = []
 # angular_velocity_ECI_ra = []
 # angular_velocity_ECI_dec = []
 # angular_velocity_ECO_lambda = []
@@ -185,34 +185,36 @@ orientations_quaternion = [(float(lines[i].split()[10]),float(lines[i].split()[1
 
 #plt.tight_layout()
 #plt.savefig(FigDestination + 'LAGEOS-2_orbital.png')
+for i in range(10) :
+    print(180*dist(angular_velocities_BF[i])/pi)
 
 
 fig1 = plt.figure(figsize=(10,8))
 
 plt.subplot(321)
-plt.plot(times, [a[0] for a in angular_velocities_BF],linewidth=1.)
+plt.plot(times, [180*a[0]/pi for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_x')
 plt.subplot(322)
-plt.plot(times[Nlines-8:], [a[0] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
+plt.plot(times[Nlines-80:], [180*a[0]/pi for a in angular_velocities_BF[Nlines-80:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_x (ZOOM)')
 
 plt.subplot(323)
-plt.plot(times, [a[1] for a in angular_velocities_BF],linewidth=1.)
+plt.plot(times, [180*a[1]/pi for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y')
 plt.subplot(324)
-plt.plot(times[Nlines-8:], [a[1] for a in angular_velocities_BF[Nlines-8:]],linewidth=1.)
+plt.plot(times[Nlines-80:], [180*a[1]/pi for a in angular_velocities_BF[Nlines-80:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
 plt.subplot(325)
-plt.plot(times, [a[2] for a in angular_velocities_BF],linewidth=1.)
+plt.plot(times, [180*a[2]/pi for a in angular_velocities_BF],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_z')
 plt.subplot(326)
-plt.plot(times[Nlines-87:], [ a[1] for a in angular_velocities_BF[Nlines-87:]],linewidth=1.)
+plt.plot(times[Nlines-870:], [ 180*a[2]/pi for a in angular_velocities_BF[Nlines-870:]],linewidth=1.)
 plt.xlabel('Time (Days)')
 plt.ylabel('Omega_y (ZOOM)')
 
