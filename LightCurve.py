@@ -48,13 +48,14 @@ def radec2cart(Xradec) :
 
 
 class Surface :
-    def __init__(self,vertices, normal, albedo=0.2) :
+    def __init__(self,vertices, normal=None, albedo=0.2) :
         self.P1 = vertices[0]
         self.P2 = vertices[1]
         self.P3 = vertices[2]
-        self.normal_vector = normalize(normal)
+        self.normal_vector = normalize(np.cross(self.P2-self.P1,self.P3-self.P2)) if normal is None else self.normal_vector = normalize(normal)
         self.area = 0.5*np.linalg.norm(np.cross(self.P2-self.P1,self.P3-self.P1))
         self.albedo = albedo
+
 
 class Object :
     def __init__(self,surf_list) :

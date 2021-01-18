@@ -71,7 +71,7 @@ def affichage(list_surf):   #Realise un affichage d'une triangulation
 def give_normal(v1,v2,v3):  #Renvoie le vecteur normal unitaire à un plan donne par trois points
     s1 = tuple(v2[i]-v1[i] for i in range(3))
     s2 = tuple(v3[i]-v1[i] for i in range(3))
-    vect = s1[1]*s2[2]-s1[2]*s2[1],s1[2]*s2[0]-s1[0]*s2[2],s1[0]*s2[1]-s1[1]*s2[0]  #Produit scalaire
+    vect = s1[1]*s2[2]-s1[2]*s2[1],s1[2]*s2[0]-s1[0]*s2[2],s1[0]*s2[1]-s1[1]*s2[0]  #Produit vectoriel
     return tuple(vect[i]/np.sqrt(vect[0]**2+vect[1]**2+vect[2]**2) for i in range(3))
       
 
