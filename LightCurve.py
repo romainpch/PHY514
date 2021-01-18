@@ -159,6 +159,11 @@ def L(object, obs, sun, t) :
         res += S(mu,mu_0, alpha)*surf.albedo*surf.area
     return res
 
+def magnitude(L, d, m_ref = -26.7) :#référence par rapport au soleil
+    '''Magnitude of an object of luminosity L at a distance d with respect to a reference object of magnitude m_ref'''
+    E = L/(4*pi*d**2)
+    return m_ref - 2.5*log(E)/log(10.)
+
 ts=load.timescale()
 eph=load('de421.bsp')
 sun, earth=eph['sun'],eph['earth']
@@ -185,12 +190,11 @@ lightcurve = []
 for i in range(len(t)) :
     q = q_list[i]
     satellite.setOrientation(q)
-    lightcurve += [L(satellite,palaiseau,sun,t[i])]
+    geocentric_pos = satellite.realobj.at(t[i]).position.m
+    lightcurve += [magnitude(L(satellite,palaiseau,sun,t[i]),np.linalg.norm(geocentric_pos))]
 
 plt.plot(t.tt,lightcurve)
 plt.show()
-
-
 
 
 
