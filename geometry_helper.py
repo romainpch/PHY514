@@ -57,11 +57,13 @@ def affichage(list_surf):   #Realise un affichage d'une triangulation
         z = [surf.v1[2], surf.v2[2],surf.v3[2]]
 
         #On effectue une rotation des points affichés, car il ne peut pas afficher deux points avec les même coordonnées X et Y
-        c1,c2 = 0.999, 0.998
+        c1,c2 = 0.999999999, 0.999999998
         s1,s2 = np.sqrt(1-c1**2),np.sqrt(1-c2**2)
         surface = np.array([[1,0,0],[0,c1,-s1],[0,s1,c1]]) @ np.array([[c2,0,s2],[0,1,0],[-s2,0,c2]]) @ np.array([x,y,z])
         
+        
         ax.plot_trisurf(surface[0],surface[1],surface[2],linewidth=1,antialiased = True)
+        #ax.auto_scale_xyz([-5, 5], [-5, 5], [-5, 5])
     plt.show()
     
 
@@ -138,4 +140,4 @@ def export(list_surf,filename): #Ecrit un fichier pour une geometrie donnee au f
                     output.write('\t')
             output.write('0.3750000000000000\t0.2010000000000000\t0.4240000000000000\t0.095\t0.025\t0.880\n')   #Valeur arbitraire des coefficients de reflexion
 
-export(box(4,4,10),'toto.txt')
+affichage(box(4,4,10))

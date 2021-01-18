@@ -82,9 +82,6 @@ def print_ECO_ECI_radec(figname) :
     angular_velocity_ECO_lambda = []
     angular_velocity_ECO_theta = []
 
-    bla_theta = []
-    bla_lambda = []
-
     for i in range(Nlines) :
         angular_velocity_BF = angular_velocities_BF[i]
         quaternion = orientations_quaternion[i]
@@ -135,13 +132,13 @@ def print_ECO_ECI_radec(figname) :
     plt.subplot(131)
     plt.plot(times, angular_velocity_ECO_theta,linewidth=1.)
     plt.xlabel('Time (year)')
-    plt.ylabel('theta_ECO (deg)')
+    plt.ylabel('$\\theta_{ECO}$ (deg)')
     # plt.xlim(0,8)
 
     plt.subplot(132)
     plt.plot(times, angular_velocity_ECO_lambda,linewidth=1.)
     plt.xlabel('Time (year)')
-    plt.ylabel('lambda_ECO (deg)')
+    plt.ylabel('$\lambda_{ECO}$ (deg)')
     # plt.xlim(0,8)
     # plt.ylim(0,360)
 
@@ -149,8 +146,8 @@ def print_ECO_ECI_radec(figname) :
     ax.plot([ra*np.pi/180 for ra in angular_velocity_ECO_lambda],[180-dec for dec in angular_velocity_ECO_theta],linewidth=0.8)
     ax.set_rlabel_position(90)
     ax.set_rlim(0,90)
-    ax.text(np.radians(90+10),ax.get_rmax()*3./4.,'theta_ECO',rotation=90,ha='center',va='center',size=6)
-    ax.text(np.radians(20),ax.get_rmax()*1.1,'lambda_ECO',rotation=-70,ha='center',va='center',size=6)
+    ax.text(np.radians(90+10),ax.get_rmax()*3./4.,'$\\theta_{ECO}$',rotation=90,ha='center',va='center',size=6)
+    ax.text(np.radians(20),ax.get_rmax()*1.1,'$\lambda_{ECO}$',rotation=-70,ha='center',va='center',size=6)
     ax.set_yticklabels(['165°','150°','135°','120°','105°'],size=6)
 
     plt.tight_layout()
@@ -162,36 +159,36 @@ def print_ECI_cart(figname,timescale,zoom=True) :
     plt.subplot(321)
     plt.plot(times, [180*a[0]/pi for a in angular_velocities_BF],linewidth=1.)
     plt.xlabel('Time ('+timescale+')')
-    plt.ylabel('Omega_x')
+    plt.ylabel('$\omega_x$')
 
 
     plt.subplot(323)
     plt.plot(times, [180*a[1]/pi for a in angular_velocities_BF],linewidth=1.)
     plt.xlabel('Time ('+timescale+')')
-    plt.ylabel('Omega_y')
+    plt.ylabel('$\omega_y$')
 
 
     plt.subplot(325)
     plt.plot(times, [180*a[2]/pi for a in angular_velocities_BF],linewidth=1.)
     plt.xlabel('Time ('+timescale+')')
-    plt.ylabel('Omega_z')
+    plt.ylabel('$\omega_z$')
 
 
     if zoom :
         plt.subplot(322)
         plt.plot(times[Nlines-80:], [180*a[0]/pi for a in angular_velocities_BF[Nlines-80:]],linewidth=1.)
         plt.xlabel('Time ('+timescale+')')
-        plt.ylabel('Omega_x (ZOOM)')
+        plt.ylabel('$\omega_x$ (ZOOM)')
 
         plt.subplot(324)
         plt.plot(times[Nlines-80:], [180*a[1]/pi for a in angular_velocities_BF[Nlines-80:]],linewidth=1.)
         plt.xlabel('Time ('+timescale+')')
-        plt.ylabel('Omega_y (ZOOM)')
+        plt.ylabel('$\omega_y$ (ZOOM)')
 
         plt.subplot(326)
         plt.plot(times[Nlines-870:], [ 180*a[2]/pi for a in angular_velocities_BF[Nlines-870:]],linewidth=1.)
         plt.xlabel('Time ('+timescale+')')
-        plt.ylabel('Omega_y (ZOOM)')
+        plt.ylabel('$\Omega_z$ (ZOOM)')
 
 
     plt.tight_layout()
@@ -202,16 +199,16 @@ def print_ECI_cart(figname,timescale,zoom=True) :
 
 
 #Begining of the script
-#propa = '1.0.0_2020-10-22_11-02-54' #LAGEOS-2 8-years propagation - step 1s
-#propa = '1.0.0_2020-11-14_21-24-22' #LAGEOS-2 8-years propagation - step 0.1s
+propa = 'propagation_v1.0.0_2020-10-22_11-02-54.txt' #LAGEOS-2 8-years propagation - step 1s
+#propa = 'propagation_v1.0.0_2020-11-14_21-24-22.txt' #LAGEOS-2 8-years propagation - step 0.1s
 #propa = 'propagation_v1.0.0_2020-12-09_22-31-07.txt' #Fig16 - OrtizGomez
-propa="propagation_v1.0.0_2020-12-11_09-51-13.txt" #Envisat -5 year
+#propa="propagation_v1.0.0_2020-12-11_09-51-13.txt" #Envisat -5 year
 
-
-Path = './Simulations/Envisat/5years/'
-Nlines = 5*365*24
-timescale='year'
-FigDestination = './figures/Envisat/5years/'
+Path = './Simulations/LAGEOS-2/'
+#Path = './Simulations/Envisat/Fig16_OrtizGomez/'
+Nlines = 8*365
+timescale='years'
+FigDestination = './figures/LAGEOS-2/'
 
 
 with open(Path + propa,'r') as data_file:
@@ -219,7 +216,7 @@ with open(Path + propa,'r') as data_file:
 
 range_numbers = range(13,13+Nlines)
 
-if timescale=='year' :
+if timescale=='years' :
     times = [sec2year(float(lines[i].split()[0])) for i in range_numbers]
 elif timescale=='days' :
     times = [sec2days(float(lines[i].split()[0])) for i in range_numbers]
@@ -229,6 +226,6 @@ positions_ECI_c = [(float(lines[i].split()[4]),float(lines[i].split()[5]),float(
 angular_velocities_BF = [(float(lines[i].split()[7]),float(lines[i].split()[8]),float(lines[i].split()[9])) for i in range_numbers]
 orientations_quaternion = [(float(lines[i].split()[10]),float(lines[i].split()[11]),float(lines[i].split()[12]),float(lines[i].split()[13])) for i in range_numbers]
 
-#print_ECO_ECI_radec('lageos-2')
-#print_ECI_cart('Envisat_Velocity_cart.png','days')
-print_ECI_cart('Envisat_Velocity_cart.png',timescale,False)
+print_ECO_ECI_radec('lageos-2')
+#print_ECI_cart('Envisat_Fig16_Velocity_cart.png','days')
+#print_ECI_cart('Envisat_Velocity_cart.png',timescale,False)
