@@ -85,9 +85,29 @@ class Object :
         l_surf.append(Surface(np.array([[x,-y,z],[x,y,z],[x,-y,-z]]), np.array([1,0,0])))
         self.surf_list = l_surf  
 
-    def computeSphereMesh(self, r, N) :
-        surftest = Surface(np.array([[1,0,0], [1,1,0], [0,0,0]]),np.array([0,0,1]))
-        self.surf_list = [surftest]
+    def computeSphereMesh(self, radius, N) :
+        #a completer en prenant en compte N faces et non uniquement 264
+        l_surf = []
+        top = 0,0,radius
+        bottom = 0,0,-radius
+        angle = np.pi/12
+        
+        m_vertex=[[(round(radius*np.sin(j*angle)*np.cos(2*i*angle),16),\
+            round(radius*np.sin(j*angle)*np.sin(2*i*angle),16),\
+            round(radius*np.cos(j*angle),16))\
+            for i in range(13)] for j in range(1,12)]   #On cree tous les points de la triangulation
+
+        for i in range(12): #Ajout des faces top et bottom
+            l_surf.append(Surface(top,m_vertex[0][i+1],m_vertex[0][i]))
+            l_surf.append(Surface(bottom,m_vertex[-1][i],m_vertex[-1][i+1]))
+        
+        for j in range(0,10):   #Ajout de toutes les faces latérales
+            for i in range(12):
+                l_surf.append(Surface(m_vertex[j][i],m_vertex[j][i+1],m_vertex[j+1][i]))
+                l_surf.append(Surface(m_vertex[j][i+1],m_vertex[j+1][i+1],m_vertex[j+1][i]))
+
+
+        self.surf_list = l_surf
 
 
 class Sphere(Object) :
