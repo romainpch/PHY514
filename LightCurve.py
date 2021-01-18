@@ -2,6 +2,7 @@ from math import pi, log, sin, cos, exp
 import numpy as np
 import matplotlib.pyplot as plt
 from skyfield.api import load, Topos, EarthSatellite
+from astropy import units as u
 
 def normalize(vector) :
     return vector / np.linalg.norm(vector)
@@ -129,8 +130,9 @@ def f(alpha, A_0=0.5, D=0.1, k=-0.5) :
 #Les luminosités de Lommel-Seeliger et Lambert S_LS et S_L sont à coder
 #Cependant elles fonctionnenet bien pour les planetes et astéoides
 #Pour des satellites, préférer les modèles de Ashikhmin-Shirley et Cook-Torrance (a voir comment implémenter ça dans un second temps)
-def uB(loc,q) :
-    pos_radec = loc.radec() #Obtenir ici les coordonées de loc sous forme np.array([r, ra, dec])
+def uB(loc,t,q) :
+    # pos_radec = loc.radec() #Obtenir ici les coordonées de loc sous forme np.array([r, ra, dec])
+    pos_radec = loc.at(t).position.to(u.au).value
     return normalize(I2BF(radec2cart(pos_radec),q))
 
 def S_LS(mu, mu_0) :
@@ -144,16 +146,16 @@ def S(mu,mu_0, alpha, c=0.1) :
     return f(alpha)*(S_LS(mu,mu_0) + c*S_L(mu,mu_0))
 
 def L(object, obs, sun, t) :
-    alpha = phase_angle(object.realobj, obs, t)
+    alpha = phase_angle(object.realobj, obs, t).to(u.deg).value
     res = 0
     for surf in object.surf_list :
         uB_n = surf.normal_vector
-        uB_obs = uB(obs,object.orientation_quaternion)
-        uB_sun = uB(sun,object.orientation_quaternion)
+        uB_obs = uB(obs,t,object.orientation_quaternion)
+        uB_sun = uB(sun,t,object.orientation_quaternion)
 
         mu = np.dot(uB_n, uB_obs)
         mu_0 = np.dot(uB_n, uB_sun)
-        res += L(mu,mu_0, alpha)*surf.albedo*surf.area
+        res += S(mu,mu_0, alpha)*surf.albedo*surf.area
     return res
 
 ts=load.timescale()
@@ -176,7 +178,6 @@ t=ts.utc(2021,1,11,16,range(30))
 #Génération d'une courbe de lumière :
 satellite = Box(1.,1.,1.)
 satellite.setObj(iss)
-t_list = np.linspace(0.,1.,num=5)
 q_list = np.ones((len(t),4))
 
 lightcurve = []
@@ -185,10 +186,8 @@ for i in range(len(t)) :
     satellite.setOrientation(q)
     lightcurve += [L(satellite,palaiseau,sun,t[i])]
 
-print(lightcurve)
-
-
-
+plt.plot(t.tt,lightcurve)
+plt.show()
 
 
 
