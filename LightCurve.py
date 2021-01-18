@@ -87,6 +87,7 @@ class Object :
 
     def computeSphereMesh(self, radius, N) :
         #a completer en prenant en compte N faces et non uniquement 264
+        #il faut aussi changer les lignes l_surf.append(Surface en mettant des array + le vecteur normal pour aller avec la syntaxe de Surface
         l_surf = []
         top = 0,0,radius
         bottom = 0,0,-radius
@@ -105,8 +106,6 @@ class Object :
             for i in range(12):
                 l_surf.append(Surface(m_vertex[j][i],m_vertex[j][i+1],m_vertex[j+1][i]))
                 l_surf.append(Surface(m_vertex[j][i+1],m_vertex[j+1][i+1],m_vertex[j+1][i]))
-
-
         self.surf_list = l_surf
 
 
