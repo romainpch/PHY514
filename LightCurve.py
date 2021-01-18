@@ -111,9 +111,8 @@ def f(alpha, A_0=0.5, D=0.1, k=-0.5) :
 #Cependant elles fonctionnenet bien pour les planetes et astéoides
 #Pour des satellites, préférer les modèles de Ashikhmin-Shirley et Cook-Torrance (a voir comment implémenter ça dans un second temps)
 def uB(loc,q) :
-    lat = loc.latitude
-    long = loc.longitude
-    return normalize(I2BF(radec2cart(np.array([1., lat, long])),q))
+    pos_radec = loc.radec() #Obtenir ici les coordonées de loc sous forme np.array([r, ra, dec])
+    return normalize(I2BF(radec2cart(pos_radec),q))
 
 def S_LS(mu, mu_0) :
     # a coder, 
@@ -168,6 +167,14 @@ for i in range(len(t)) :
     lightcurve += [L(satellite,palaiseau,sun,t[i])]
 
 print(lightcurve)
+
+
+
+
+
+
+
+
 
 # m_sun = -26.73 #Sun magnitude
 
