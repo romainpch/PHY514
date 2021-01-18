@@ -143,7 +143,8 @@ def S_L(mu, mu_0) :
     return 1.0
 
 def S(mu,mu_0, alpha, c=0.1) :
-    return f(alpha)*(S_LS(mu,mu_0) + c*S_L(mu,mu_0))
+    # return f(alpha)*(S_LS(mu,mu_0) + c*S_L(mu,mu_0)) # marchera une fois que S_LS et S_L seront codées 
+    return f(alpha)*mu*mu_0*(c + 1/(mu + mu_0))
 
 def L(object, obs, sun, t) :
     alpha = phase_angle(object.realobj, obs, t).to(u.deg).value
