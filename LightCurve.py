@@ -1,4 +1,4 @@
-from math import pi, log, sin, cos, exp
+from math import pi, log, sin, cos, exp, acos
 import numpy as np
 import matplotlib.pyplot as plt
 from skyfield.api import load, Topos, EarthSatellite
@@ -126,7 +126,7 @@ class SphereSatellite(SpaceObject) :
         
 class BoxSatellite(SpaceObject) :
     def __init__(self,dim_x,dim_y,dim_z) :
-        SpaceObject.__init__(self,'box', 8)
+        SpaceObject.__init__(self,'box', 12)
         SpaceObject.computeBoxMesh(self,dim_x,dim_y,dim_z)
         self.dimensions = [dim_x,dim_y,dim_z]
 
@@ -134,6 +134,17 @@ class BoxSatellite(SpaceObject) :
 #  Functions to compute LightCurves  #
 ######################################
 
+
+def angle_between(u,v) :
+    return acos(np.dot(u,v))
+
+def testreflectance(uB_sun,uB_n) :
+    angle = angle_between(uB_sun,uB_n)
+    if angle > pi/2 :
+        return False
+    if angle < 0 :
+        return False
+    return True
 
 def phase_function(alpha, A_0=0.5, D=0.1, k=-0.5) :
     return A_0*exp(-alpha/D) + k*alpha + 1
@@ -150,14 +161,15 @@ def brightness(satellite, alpha,  observer_BF, sun_BF) :
         uB_obs = observer_BF #Because uB_obs is the vector from the observer to the target, and target is at [0,0,0] in the BF
         uB_sun = sun_BF
         
+        isreflected = testreflectance(uB_sun,uB_n)
         
-        mu = np.dot(uB_n, uB_obs)
-        mu_0 = np.dot(uB_n, uB_sun)
-        if mu*mu_0 == 0 :
-            S = 0
-        else :
-            S = brdf_function(mu,mu_0, alpha)*surf.albedo*surf.area
-        res += S
+        if isreflected :
+            mu = np.dot(uB_n, uB_obs)
+            mu_0 = np.dot(uB_n, uB_sun)
+            if mu*mu_0 != 0 :
+                S = brdf_function(mu,mu_0, alpha)*surf.albedo*surf.area
+                res += S
+        
     return res
 
 def magnitude(L, d, m_ref = -26.7) :#référence par rapport au soleil
@@ -207,33 +219,31 @@ t=ts.utc(2021,1,11,16,range(30))
 #                        Satellite_BF(0,0,0)
 #
 # Le satellite tourne selon l'axe z_BF (= z_IF) à une vitesse de 1 tour par seconde -> ω = 2π
-# La durée d'observation est 5sec, la fréquence d'échantillonage est 100Hz
+# La durée d'observation est 10sec, la fréquence d'échantillonage est 100Hz
 
-duration = 5
+duration = 10
 f_sample = 100
-times = np.linspace(0,5,num=duration*f_sample )
+times = np.linspace(0,duration,num=duration*f_sample )
 
 satellite = BoxSatellite(1.,1.,1.) #1m cubesat
 omega = 2*pi
 earth_phase = 5*pi/4
 sun_phase = 3*pi/4
-alpha = pi/2
+alpha = earth_phase-sun_phase
+
+uBF_sun_ref = np.array([cos(sun_phase), sin(sun_phase), 0])
 
 LightCurve = []
 for t in times :
     uBF_sun = np.array([cos(omega*t + sun_phase), sin(omega*t + sun_phase), 0])
     uBF_earth = np.array([cos(omega*t + earth_phase), sin(omega*t + earth_phase), 0])
 
-    S = brightness(satellite,alpha,uBF_earth,uBF_sun)
-    LightCurve += [S]
+    LightCurve += [brightness(satellite,alpha,uBF_earth,uBF_sun)]
 
 
-plt.plot(times[1:-1],LightCurve[1:-1])
+plt.plot(times[1:-1],LightCurve[1:-1],label='Light Curve')
+
 plt.show()
-
-# Le Satellite tourne autour de son axe y 
-
-# q_list = np.ones((len(t),4))
 
 # lightcurve = []
 # for i in range(len(t)) :
