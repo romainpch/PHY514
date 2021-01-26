@@ -220,7 +220,7 @@ t=ts.utc(2021,1,11,16,range(30))
 #
 # Le satellite tourne selon l'axe z_BF (= z_IF) à une vitesse de 1 tour par seconde -> ω = 2π
 # La durée d'observation est 10sec, la fréquence d'échantillonage est 100Hz
-
+"""
 duration = 10
 f_sample = 100
 times = np.linspace(0,duration,num=duration*f_sample )
@@ -244,7 +244,7 @@ for t in times :
 plt.plot(times[1:-1],LightCurve[1:-1],label='Light Curve')
 
 plt.show()
-
+"""
 # lightcurve = []
 # for i in range(len(t)) :
 #     q = q_list[i]
@@ -282,3 +282,36 @@ plt.show()
 # plt.ylabel('irradiance ($ph/s/m^2$)')
 
 # plt.show()
+
+#####################
+# Autre proposition #
+#####################
+
+def luminosity(sat,sat_pos,sun_pos,obs_pos,sat_att):
+    sun_dir_BF = normalize(I2BF(sun_pos-sat_pos,sat_att))  #A vérifier que les changement de référentiel se font dans le bon sens
+    obs_dir_BF = normalize(I2BF(obs_pos-sat_pos,sat_att))
+    alpha = acos(np.dot(sun_dir_BF,obs_dir_BF))
+    lum = 0
+    for surf in sat.surf_list:
+        surf_norm = surf.normal_vector
+        mu = np.dot(surf_norm,obs_dir_BF)
+        mu0 = np.dot(surf_norm,sun_dir_BF)
+        if mu > 0 and mu0 > 0:
+            lum += brdf_function(mu,mu0,alpha)*surf.albedo*surf.area
+    return lum
+            
+duration = 10
+f_sample = 100
+times = np.linspace(0,duration,num=duration*f_sample )
+satellite = BoxSatellite(1.,1.,1.)
+sun_pos = np.array([0,0,0])
+obs_pos = np.array([0,np.sqrt(2),0])
+sat_pos = np.array([np.sqrt(2),np.sqrt(2),0])
+
+rot_axis = normalize(np.array([0,1,0]))
+w = 2*pi
+q_list = [(cos(w*t/2),rot_axis[0]*sin(w*t/2),rot_axis[1]*sin(w*t/2),rot_axis[2]*sin(w*t/2)) for t in times]
+
+lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
+plt.plot(times,lightcurve,label='Light Curve')
+plt.show()
