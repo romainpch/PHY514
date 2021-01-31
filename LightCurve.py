@@ -67,9 +67,9 @@ t=ts.utc(2021,1,11,16,range(30))
 duration = 1
 f_sample = 200
 alpha_deg = 95 #required to compare with Bradley and Axelrad results
-#satellite = BoxSatellite(1.,1.,1.)
+satellite = BoxSatellite(1.,1.,1.)
 #satellite = SphereSatellite(1.)
-#satellite = CylinderSatellite(1.,1,30)
+#satellite = CylinderSatellite(1.,1,1000)
 w = 2*pi #satellite rotation
 
 #Generating times and positions for the given phase angle
@@ -79,10 +79,10 @@ sat_pos = np.array([0.,0.,0.])
 sun_pos =np.array([1.,0.,0.])
 obs_pos =np.array([cos(alpha_rad),sin(alpha_rad),0])
 
-alea = False #rot_axis is alea
+alea = True #rot_axis is alea
 Nb_genere = 1 #nb of generated lightcurves
 
-plt.title("Light curve for a phase angle : " + str(alpha_deg) + "deg")
+plt.title("Light curve for Sphere Saatellite at phase angle : " + str(alpha_deg) + "deg")
 
 if alea :
     for i in range(Nb_genere) :
