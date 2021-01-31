@@ -64,37 +64,38 @@ t=ts.utc(2021,1,11,16,range(30))
 #  LightCurve generation  #
 ###########################
 
+duration = 1
+f_sample = 200
+alpha_deg = 95 #required to compare with Bradley and Axelrad results
+#satellite = BoxSatellite(1.,1.,1.)
+#satellite = SphereSatellite(1.)
+#satellite = CylinderSatellite(1.,1,30)
+w = 2*pi #satellite rotation
 
-# On se donne un référentiel inertiel simplifié 
-# Le satellite est un cube sat de 1m cube
-# L'observateur, le soleil et le satellite sont fixes dans ce référentiel
-# Ils ont pour positions Terre_IF(0,0,0)
-#                        Soleil_IF(0,√2,0)
-#                        Satellite_IF(√2/2,√2/2,0)
-# L'angle de phase vaut toujours π/2
-#
-# Le BF du satelite est le référentiel inertiel translaté de telle sorte à ce que la position du satellite dans le BF soit (0,0,0)
-# Ainsi, dans le BF, les positions sont à l'instant t : 
-#                        Terre_BF(cos(ωt+5π/4),sin(ωt+5π/4),0)
-#                        Soleil_BF(cos(ωt+3π/4),sin(ωt+3π/4),0)
-#                        Satellite_BF(0,0,0)
-#
-# Le satellite tourne selon l'axe z_BF (= z_IF) à une vitesse de 1/4 tour par seconde -> ω = π/2
-# La durée d'observation est 10sec, la fréquence d'échantillonage est 100Hz
-            
-duration = 10
-f_sample = 100
+#Generating times and positions for the given phase angle
 times = np.linspace(0,duration,num=duration*f_sample )
-satellite = BoxSatellite(1.,1.,1.)
-sun_pos = np.array([0,0,0])
-obs_pos = np.array([0,np.sqrt(2),0])
-sat_pos = np.array([np.sqrt(2),np.sqrt(2),0])
+alpha_rad = pi*alpha_deg/180.
+sat_pos = np.array([0.,0.,0.])
+sun_pos =np.array([1.,0.,0.])
+obs_pos =np.array([cos(alpha_rad),sin(alpha_rad),0])
 
-rot_axis = normalize(np.array([0,0,1]))
-w = pi/2
-q_list = [(cos(w*t/2),rot_axis[0]*sin(w*t/2),rot_axis[1]*sin(w*t/2),rot_axis[2]*sin(w*t/2)) for t in times]
+alea = False #rot_axis is alea
+Nb_genere = 1 #nb of generated lightcurves
 
-lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
-plt.plot(times,lightcurve,label='Light Curve')
+plt.title("Light curve for a phase angle : " + str(alpha_deg) + "deg")
+
+if alea :
+    for i in range(Nb_genere) :
+        rot_axis = normalize(np.random.rand(3))
+        q_list = [(cos(w*t/2),rot_axis[0]*sin(w*t/2),rot_axis[1]*sin(w*t/2),rot_axis[2]*sin(w*t/2)) for t in times]
+        lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
+        plt.plot([360*t for t in times],lightcurve)
+else :
+    rot_axis = normalize(np.array([0,0,1]))
+    q_list = [(cos(w*t/2),rot_axis[0]*sin(w*t/2),rot_axis[1]*sin(w*t/2),rot_axis[2]*sin(w*t/2)) for t in times]
+    lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
+    plt.plot([360*t for t in times],lightcurve)
+
+plt.xlabel('Rotational phase (deg)')
+plt.ylabel('Light curve')
 plt.show()
-
