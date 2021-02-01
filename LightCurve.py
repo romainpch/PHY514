@@ -39,30 +39,10 @@ def magnitude(L, d, m_ref = -26.7) :#référence par rapport au soleil
     return m_ref - 2.5*log(E)/log(10.)
 
 
-####################
-#  Skyfield part   #
-####################
 
-
-ts=load.timescale()
-eph=load('de421.bsp')
-sun, earth=eph['sun'],eph['earth']
-palaiseau = Topos(latitude = 48.7107853, longitude = 2.2110581)
-
-def phase_angle_pos(sat_pos,loc_pos,sol_pos):
-    return (sol_pos-sat_pos).separation_from(loc_pos-sat_pos)
-
-def phase_angle(sat,loc,t,sol=sun):
-     sun_from_earth = sol-earth
-     return phase_angle_pos(sat.at(t),loc.at(t),sun_from_earth.at(t))
-    
-iss = EarthSatellite('1 25544U 98067A   21011.39930122  .00001177  00000-0  29227-4 0  9996','2 25544  51.6469  38.2316 0000504 209.0007 284.1827 15.49278328264297',name='iss')
-t=ts.utc(2021,1,11,16,range(30))
-
-
-###########################
-#  LightCurve generation  #
-###########################
+###########################################
+#  LightCurve generation : Basic example  #
+###########################################
 
 duration = 1
 f_sample = 200
@@ -99,3 +79,30 @@ else :
 plt.xlabel('Rotational phase (deg)')
 plt.ylabel('Light curve')
 plt.show()
+
+
+####################
+#  Skyfield part   #
+####################
+
+
+ts=load.timescale()
+eph=load('de421.bsp')
+sun, earth=eph['sun'],eph['earth']
+palaiseau = Topos(latitude = 48.7107853, longitude = 2.2110581)
+
+def phase_angle_pos(sat_pos,loc_pos,sol_pos):
+    return (sol_pos-sat_pos).separation_from(loc_pos-sat_pos)
+
+def phase_angle(sat,loc,t,sol=sun):
+     sun_from_earth = sol-earth
+     return phase_angle_pos(sat.at(t),loc.at(t),sun_from_earth.at(t))
+    
+iss = EarthSatellite('1 25544U 98067A   21011.39930122  .00001177  00000-0  29227-4 0  9996','2 25544  51.6469  38.2316 0000504 209.0007 284.1827 15.49278328264297',name='iss')
+t=ts.utc(2021,1,11,16,range(30))
+
+
+
+######################################
+#  LightCurve generation : Skyfield  #
+######################################
