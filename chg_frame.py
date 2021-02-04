@@ -3,6 +3,10 @@ import numpy as np
 def normalize(vector) :
     return vector / np.linalg.norm(vector)
 
+def change_ref(X, rot) :
+    return rot.apply(X)
+
+
 def I2BF(Xeci, q) :
     #Passage de X dans le ECI à a dans le BF
     '''Body frame (cartesian) to Earth Centered Inertial frame (cartesian) thanks to the quaternion of the rotation'''
