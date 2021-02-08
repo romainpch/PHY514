@@ -1,0 +1,33 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import sys
+import copy
+import numpy as np
+from datetime import date,datetime,timedelta,timezone
+from skyfield import almanac
+from astropy.io import fits
+
+def plot_fits(filefits,radec,save=False):
+    
+  hdu_list = fits.open(filefits)
+  image_data = hdu_list[0].data
+  hdu_list.close()
+  fig, ax1 = plt.subplots(figsize=(22,16))
+  ax1.plot(radec['s_x'],radec['s_y'],'*',label='Start')
+  ax1.plot(radec['e_x'],radec['e_y'],'x',label='Start')    
+  plt.imshow(image_data,cmap='gray')
+  plt.colorbar()    
+  if save==True:
+    plt.savefig('ligh_curve')
+  else:
+    plt.show()
+
+fileradec = './globalstar_radec.csv'   
+radec = pd.read_csv(fileradec)
+radec['date'] = pd.to_datetime(radec['date'])
+radec = radec[radec['len']>50]
+i = 3
+subradec = copy.deepcopy(radec[i:i+1])
+filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
+plot_fits(filefits,subradec)

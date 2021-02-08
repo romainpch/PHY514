@@ -82,8 +82,8 @@ def generate_attitude_list(rot_init, rot_vect, n_iter):
 duration = 1
 f_sample = 200
 alpha_deg = 95 #required to compare with Bradley and Axelrad results
-#satellite = BoxSatellite(1.,1.,1.)
-satellite = SphereSatellite(1.)
+satellite = BoxSatellite(3.,1.,1.)
+#satellite = SphereSatellite(1.)
 #satellite = CylinderSatellite(1.,1,1000)
 w = 2*pi #satellite rotation
 
@@ -94,10 +94,10 @@ sat_pos = np.array([0.,0.,0.])
 sun_pos =np.array([1.,0.,0.])
 obs_pos =np.array([cos(alpha_rad),sin(alpha_rad),0])
 
-alea = True #rot_axis is alea
+alea = False #rot_axis is alea
 Nb_genere = 20 #nb of generated lightcurves
 
-plt.title("Light curve for Sphere Saatellite at phase angle : " + str(alpha_deg) + "deg")
+#plt.title("Light curve for Sphere Saatellite at phase angle : " + str(alpha_deg) + "deg")
 
 if alea :
     for i in range(Nb_genere) :
@@ -106,7 +106,7 @@ if alea :
         lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
         plt.plot([360*t for t in times],lightcurve)
 else :
-    rot_axis = normalize(np.array([1,0,0]))
+    rot_axis = normalize(np.array([0,0,1]))
     q_list = generate_attitude_list(R.identity(),R.from_rotvec(w/f_sample*rot_axis),duration*f_sample)
     lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
     plt.plot([360*t for t in times],lightcurve)
