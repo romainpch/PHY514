@@ -82,6 +82,7 @@ def generate_attitude_list(rot_init, rot_vect, n_iter):
 duration = 1
 f_sample = 200
 alpha_deg = 95 #required to compare with Bradley and Axelrad results
+"""
 satellite = BoxSatellite(3.,1.,1.)
 #satellite = SphereSatellite(1.)
 #satellite = CylinderSatellite(1.,1,1000)
@@ -114,9 +115,47 @@ else :
 plt.xlabel('Rotational phase (deg)')
 plt.ylabel('Light curve')
 plt.show()
+"""
 
 
+#########################
+#  LightCurve analysis  #
+#########################
 
-######################################
-#  LightCurve generation : Skyfield  #
-######################################
+def phase_folding(times,lightcurve,period):
+    phases = [t % period for t in times]
+    sorted_values = [val for _,val in sorted(zip(phases, lightcurve))]
+    return sorted(phases),sorted_values
+
+def phase_dispersion(sorted_values,mean=None):
+    if mean is None:
+        mean = np.mean(lightcurve)
+    dispersion = 0
+    var = 0
+    n = len(sorted_values)
+    sorted_values.append(sorted_values[0])
+    for i in range(n):
+        dispersion += (sorted_values[i]-sorted_values[i+1])**2
+        var += (sorted_values[i]-mean)**2
+    return var/dispersion
+        
+def phase_reconstruction_diagram(times,lightcurve,periods):
+    mean = np.mean(lightcurve)
+    phase_disp = [phase_dispersion(phase_folding(times,lightcurve,period)[1],mean) for period in periods]
+    return phase_disp
+
+times = np.linspace(0,duration,num =duration*f_sample)
+w = 10*pi
+lightcurve = [np.sin(w*t)+0.3*np.random.random() for t in times]
+plt.plot(times,lightcurve)
+plt.show()
+
+log_periods = [k/100 for k in range(-200,0)]
+periods = [10**l for l in log_periods]
+phase_dispersion = phase_reconstruction_diagram(times,lightcurve,periods)
+plt.plot(log_periods,phase_dispersion)
+plt.show()
+    
+    
+
+
