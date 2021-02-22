@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation as R
 from chg_frame import *
 from SpaceObjectsGeometry import *
 from scipy.signal import lombscargle
+import random as rd
 
 ######################################
 #  Functions to compute LightCurves  #
@@ -79,9 +80,9 @@ def generate_attitude_list(rot_init, rot_vect, n_iter):
 ###########################################
 #  LightCurve generation : Basic example  #
 ###########################################
-"""
+
 duration = 1
-f_sample = 200
+f_sample = 1000
 alpha_deg = 95 #required to compare with Bradley and Axelrad results
 
 satellite = BoxSatellite(3.,1.,1.)
@@ -112,7 +113,7 @@ else :
     q_list = generate_attitude_list(R.identity(),R.from_rotvec(w/f_sample*rot_axis),duration*f_sample)
     lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
     plt.plot([360*t for t in times],lightcurve)
-
+"""
 plt.xlabel('Rotational phase (deg)')
 plt.ylabel('Light curve')
 plt.show()
@@ -151,27 +152,44 @@ def find_period(periods,phase_disp):
     t,m = max(zip(periods,phase_disp), key=(lambda x: x[1]))
     return t
 
+def truncate(times,lightcurve,prop):
+    n=len(times)
+    sample = rd.sample(list(zip(times,lightcurve)),int(n*prop))
+    sample.sort(key=(lambda x: x[0]))
+    return [a for a,b in sample],[b for a,b in sample]
+"""
 duration = 5
 f_sample = 400
 times = np.linspace(0,duration,num=duration*f_sample)
-f = 6
+f = 20
 w = 2*pi*f
-lightcurve = [np.sin(w*t)+0.3*np.random.random() for t in times]
+"""
 plt.plot(times,lightcurve)
+
+#lightcurve = [np.sin(w*t)+0.2*rd.random() for t in times]
+times_test,lightcurve_test = truncate(times,lightcurve,0.1)
+lightcurve_test = [val+0.01*(rd.random()-1/2) for val in lightcurve_test]
+plt.plot(times_test,lightcurve_test)
+
 plt.show()
 
-log_periods = [k/1000 for k in range(-2000,0)]
+log_periods = [k/100 for k in range(-200,0)]
 periods = [10**l for l in log_periods]
 freqs = [1/t for t in periods]
-phase_disp = phase_reconstruction_diagram(times,lightcurve,periods)
+phase_disp = phase_reconstruction_diagram(times_test,lightcurve_test,periods)
 plt.plot(freqs,normalize(phase_disp),color='b')
 
-phase_disp_ls = lombscargle(times,lightcurve,[2*pi/t for t in periods])
+phase_disp_ls = lombscargle(times_test,lightcurve_test,[2*pi/t for t in periods])
 plt.plot(freqs,normalize(phase_disp_ls),color='r')
 
 combine = [a*b for (a,b) in zip(phase_disp,phase_disp_ls)]
 plt.plot(freqs,normalize(combine),color='g')
 plt.xscale('log')
+plt.show()
+
+t = find_period(periods,combine)
+plt.plot(*phase_folding(times_test,lightcurve_test,t),color='b')
+plt.plot(*phase_folding(times,lightcurve,t),color='r')
 plt.show()
 
 
