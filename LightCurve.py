@@ -122,8 +122,10 @@ plt.show()
 #  LightCurve analysis  #
 #########################
 
-def phase_folding(times,lightcurve,period):
-    phases = [t % period for t in times]
+def phase_folding(times,lightcurve,period,verbose=False):
+    phases = [(t % period)/period for t in times]
+    if verbose:
+        print(phases)
     sorted_values = [val for _,val in sorted(zip(phases, lightcurve))]
     return sorted(phases),sorted_values
 
@@ -144,17 +146,31 @@ def phase_reconstruction_diagram(times,lightcurve,periods):
     phase_disp = [phase_dispersion(phase_folding(times,lightcurve,period)[1],mean) for period in periods]
     return phase_disp
 
+def find_period(periods,phase_disp):
+    t,m = max(zip(periods,phase_disp), key=(lambda x: x[1]))
+    return t
+
+duration = 5
+f_sample = 200
 times = np.linspace(0,duration,num =duration*f_sample)
+print(len(times))
 w = 10*pi
-lightcurve = [np.sin(w*t)+0.3*np.random.random() for t in times]
+lightcurve = [np.sin(w*t)**3+0.4*np.random.random()+0.3*np.sin(0.2*pi*t) for t in times]
 plt.plot(times,lightcurve)
 plt.show()
 
-log_periods = [k/100 for k in range(-200,0)]
+log_periods = [k/1000 for k in range(-1000,0)]
 periods = [10**l for l in log_periods]
-phase_dispersion = phase_reconstruction_diagram(times,lightcurve,periods)
-plt.plot(log_periods,phase_dispersion)
+phase_disp = phase_reconstruction_diagram(times,lightcurve,periods)
+plt.plot(periods,phase_disp)
+plt.xscale('log')
 plt.show()
+
+t = find_period(periods,phase_disp)
+print(t)
+plt.plot(*phase_folding(times,lightcurve,t,verbose=False))
+plt.show()
+
     
     
 
