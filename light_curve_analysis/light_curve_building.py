@@ -38,7 +38,7 @@ filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
 #plot_fits(filefits,subradec)
 
 
-def lightcurve(filefits,radec) :
+def lightcurve(filefits,radec,wide=5,plot = True) :
   hdu_list = fits.open(filefits)
   image_data = hdu_list[0].data
   hdu_list.close() 
@@ -69,39 +69,40 @@ def lightcurve(filefits,radec) :
   image_data = Image.fromarray(image_data)
   image_data = np.array(image_data.rotate(angle_deg))
 
-  
-  #fig = plt.subplots(figsize=(10,8))
-  plt.subplot(211)
-  wide = 5
   tab = image_data[int(S_rot[1])-wide:int(S_rot[1])+wide , min(int(S_rot[0]),int(E_rot[0])):max(int(S_rot[0]),int(E_rot[0]))]
-  plt.imshow(tab,cmap='gray')
-  plt.subplot(212)
-  plt.plot(np.sum(tab,axis=0), label='Light Curve')
-  plt.legend()
+  light_curve = np.sum(tab,axis=0)
 
+  if plot :
+    plt.subplot(211)
+    plt.imshow(tab,cmap='gray')
+    plt.subplot(212)
+    plt.plot(light_curve, label='Light Curve')
+    plt.legend()
 
-  fig = plt.subplots(figsize=(8,8))
-  plt.plot(radec['s_x'],radec['s_y'],'*',label='Start')
-  plt.plot(radec['e_x'],radec['e_y'],'x',label='End')  
-  plt.plot(S_rot[0],S_rot[1],'*',label='Start ROT')
-  plt.plot(E_rot[0],E_rot[1],'x',label='End ROT')  
-  plt.imshow(image_data)
-  plt.legend()
-  plt.show()
+    fig = plt.subplots(figsize=(8,8))
+    plt.plot(radec['s_x'],radec['s_y'],'*',label='Start')
+    plt.plot(radec['e_x'],radec['e_y'],'x',label='End')  
+    plt.plot(S_rot[0],S_rot[1],'*',label='Start ROT')
+    plt.plot(E_rot[0],E_rot[1],'x',label='End ROT')  
+    plt.imshow(image_data)
+    plt.legend()
+    plt.show()
 
+  return light_curve
 
 
 fileradec = './globalstar_radec.csv'   
 radec = pd.read_csv(fileradec)
 radec['date'] = pd.to_datetime(radec['date'])
 radec = radec[radec['len']>50]
-print(radec)
 i = 3
 subradec = copy.deepcopy(radec[i:i+1])
 filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
-lightcurve(filefits,subradec)
+light_curve = lightcurve(filefits,subradec,5, False)
+#plot_fits(filefits,subradec)
 
-
+plt.plot(light_curve)
+plt.show()
 
 
 
