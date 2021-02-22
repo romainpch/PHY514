@@ -82,11 +82,11 @@ def generate_attitude_list(rot_init, rot_vect, n_iter):
 duration = 1
 f_sample = 200
 alpha_deg = 95 #required to compare with Bradley and Axelrad results
-"""
+
 satellite = BoxSatellite(3.,1.,1.)
 #satellite = SphereSatellite(1.)
 #satellite = CylinderSatellite(1.,1,1000)
-w = 2*pi #satellite rotation
+w = 10*pi #satellite rotation
 
 #Generating times and positions for the given phase angle
 times = np.linspace(0,duration,num=duration*f_sample )
@@ -95,8 +95,8 @@ sat_pos = np.array([0.,0.,0.])
 sun_pos =np.array([1.,0.,0.])
 obs_pos =np.array([cos(alpha_rad),sin(alpha_rad),0])
 
-alea = False #rot_axis is alea
-Nb_genere = 20 #nb of generated lightcurves
+alea = True #rot_axis is alea
+Nb_genere = 1 #nb of generated lightcurves
 
 #plt.title("Light curve for Sphere Saatellite at phase angle : " + str(alpha_deg) + "deg")
 
@@ -105,13 +105,13 @@ if alea :
         rot_axis = normalize(np.random.rand(3))
         q_list = generate_attitude_list(R.identity(),R.from_rotvec(w/f_sample*rot_axis),duration*f_sample)
         lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
-        plt.plot([360*t for t in times],lightcurve)
+        #plt.plot([360*t for t in times],lightcurve)
 else :
     rot_axis = normalize(np.array([0,0,1]))
     q_list = generate_attitude_list(R.identity(),R.from_rotvec(w/f_sample*rot_axis),duration*f_sample)
     lightcurve = [luminosity(satellite,sat_pos,sun_pos,obs_pos,q) for q in q_list]
     plt.plot([360*t for t in times],lightcurve)
-
+"""
 plt.xlabel('Rotational phase (deg)')
 plt.ylabel('Light curve')
 plt.show()
@@ -149,7 +149,7 @@ def phase_reconstruction_diagram(times,lightcurve,periods):
 def find_period(periods,phase_disp):
     t,m = max(zip(periods,phase_disp), key=(lambda x: x[1]))
     return t
-
+"""
 duration = 5
 f_sample = 200
 times = np.linspace(0,duration,num =duration*f_sample)
@@ -158,17 +158,21 @@ w = 10*pi
 lightcurve = [np.sin(w*t)**3+0.4*np.random.random()+0.3*np.sin(0.2*pi*t) for t in times]
 plt.plot(times,lightcurve)
 plt.show()
+"""
+true_lightcurve = [val+0.01*np.random.random() for val in lightcurve]
+plt.plot(times,true_lightcurve)
+plt.show()
 
-log_periods = [k/1000 for k in range(-1000,0)]
+log_periods = [k/500 for k in range(-500,0)]
 periods = [10**l for l in log_periods]
-phase_disp = phase_reconstruction_diagram(times,lightcurve,periods)
+phase_disp = phase_reconstruction_diagram(times,true_lightcurve,periods)
 plt.plot(periods,phase_disp)
 plt.xscale('log')
 plt.show()
 
 t = find_period(periods,phase_disp)
 print(t)
-plt.plot(*phase_folding(times,lightcurve,t,verbose=False))
+plt.plot(*phase_folding(times,true_lightcurve,t,verbose=False))
 plt.show()
 
     
