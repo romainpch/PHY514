@@ -98,7 +98,7 @@ radec = radec[radec['len']>50]
 i = 3
 subradec = copy.deepcopy(radec[i:i+1])
 filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
-light_curve = lightcurve(filefits,subradec,5, False)
+light_curve = lightcurve(filefits,subradec,5, True)
 #plot_fits(filefits,subradec)
 
 plt.plot(light_curve)
