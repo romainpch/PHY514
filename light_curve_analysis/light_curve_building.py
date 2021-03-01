@@ -38,7 +38,7 @@ filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
 #plot_fits(filefits,subradec)
 
 
-def lightcurve(filefits,radec,wide=5,plot = True) :
+def lightcurve(filefits,radec,wide=5,plot = True, temps_pause = 1.) :
   hdu_list = fits.open(filefits)
   image_data = hdu_list[0].data
   hdu_list.close() 
@@ -76,7 +76,10 @@ def lightcurve(filefits,radec,wide=5,plot = True) :
     plt.subplot(211)
     plt.imshow(tab,cmap='gray')
     plt.subplot(212)
-    plt.plot(light_curve, label='Light Curve')
+    plt.plot([temps_pause*i/len(light_curve) for i in range(len(light_curve))], light_curve, label='Light Curve')
+    plt.ylabel('Luminosité addimentionnée')
+    plt.xlabel('Temps (s)')
+    
     plt.legend()
 
     fig = plt.subplots(figsize=(8,8))
@@ -98,10 +101,11 @@ radec = radec[radec['len']>50]
 i = 3
 subradec = copy.deepcopy(radec[i:i+1])
 filefits = './18_34_35/'+os.path.basename(radec.iloc[i]['image'])
-light_curve = lightcurve(filefits,subradec,5, True)
+temps_pause = 1.
+light_curve = lightcurve(filefits,subradec,5, True,temps_pause)
 #plot_fits(filefits,subradec)
 
-plt.plot(light_curve)
+plt.plot([temps_pause*i/len(light_curve) for i in range(len(light_curve))],light_curve)
 plt.show()
 
 
