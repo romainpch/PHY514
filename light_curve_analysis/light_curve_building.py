@@ -61,6 +61,10 @@ def lightcurve(filefits,radec,wide=5,plot = True, temps_pause = 1.) :
                       [sin(-angle_rad), cos(-angle_rad)]])
   
   shift = np.array([[int(dim_image[1]/2)],[int(dim_image[0]/2)]])
+
+  s_x = s_x.values
+  s_y = s_y.values
+  
   S = np.array([s_x,s_y])
   E = np.array([e_x,e_y])
   S_rot = np.dot(mat_rot, S-shift) + shift
