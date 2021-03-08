@@ -83,7 +83,7 @@ def lightcurve(filefits,radec,wide=5,plot = True, temps_pause = 1.) :
     plt.imshow(tab,cmap='gray')
     plt.subplot(212)
     plt.plot([temps_pause*i/len(light_curve) for i in range(len(light_curve))], light_curve, label='Light Curve')
-    plt.ylabel('Luminosité addimentionnée')
+    plt.ylabel('ADU')
     plt.xlabel('Temps (s)')
     
     plt.legend()

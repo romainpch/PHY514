@@ -30,8 +30,6 @@ e_values = np.array([[1735.8,1406.1],
                      [726.7,1567.0]])
 
 
-print(type(1.0))
-
 def genere_light_curve(radec, N_strikes, s_values, e_values, i_plot = True, f_plot = True, pause_time=1., wide=5, inverse=True) :
     '''
     This function generates the light curve.
@@ -85,7 +83,7 @@ def genere_light_curve(radec, N_strikes, s_values, e_values, i_plot = True, f_pl
 
         tab = image_data[int(S_rot[1])-wide:int(S_rot[1])+wide , min(int(S_rot[0]),int(E_rot[0])):max(int(S_rot[0]),int(E_rot[0]))]
         light_curve = np.sum(tab,axis=0)
-
+        light_curve_global = np.append(light_curve_global, light_curve)
 
         if i_plot :
             fig = plt.subplots(figsize=(15,8))
@@ -109,12 +107,6 @@ def genere_light_curve(radec, N_strikes, s_values, e_values, i_plot = True, f_pl
             plt.imshow(image_data)
             plt.legend()
 
-            plt.show()
-
-        if inverse :
-            light_curve = np.flip(light_curve)
-        light_curve_global = np.append(light_curve_global, light_curve)
-
         #Cette partie sert juste à se convaincre que les strikes sont espacés de 1 seconde et palier aux éventuels retards
         ref_time = np.array(['2021-01-25T18:34:42.784156000'], dtype='datetime64[ns]')
         s_time =  subradec['date']
@@ -123,15 +115,17 @@ def genere_light_curve(radec, N_strikes, s_values, e_values, i_plot = True, f_pl
         light_curve_times = np.linspace(s_time, s_time+pause_time, num=len(light_curve))
         light_curve_times_global = np.append(light_curve_times_global, light_curve_times)
 
-
+    if inverse :
+        light_curve_global = np.flip(light_curve_global)
 
     if f_plot :
         fig = plt.subplots(figsize=(15,8))
         plt.scatter(light_curve_times_global,light_curve_global,marker = '.', linewidths=0.3)
-
+        plt.ylabel('ADU')
+        plt.xlabel('Temps (s)')
     plt.show()
 
-genere_light_curve(radec, 4, s_values, e_values)
+genere_light_curve(radec, 4, s_values, e_values, False)
 
 
 
