@@ -124,14 +124,14 @@ plt.show()
 #  LightCurve analysis  #
 #########################
 
-def phase_folding(times,lightcurve,period,verbose=False):
+def phase_folding(times,lightcurve,period,verbose=False): #Effectue le calcul des phases pour chaque point de mesure et les trie
     phases = [(t % period)/period for t in times]
     if verbose:
         print(phases)
     sorted_values = [val for _,val in sorted(zip(phases, lightcurve))]
     return sorted(phases),sorted_values
 
-def phase_dispersion(sorted_values,mean=None):
+def phase_dispersion(sorted_values,mean=None): #Effectue le calcul de l'inverse du facteur de dispersion d'une courbe
     if mean is None:
         mean = np.mean(lightcurve)
     dispersion = 0
@@ -140,56 +140,59 @@ def phase_dispersion(sorted_values,mean=None):
     sorted_values.append(sorted_values[0])
     for i in range(n):
         dispersion += (sorted_values[i]-sorted_values[i+1])**2
-        var += (sorted_values[i]-mean)**2
+        var += (sorted_values[i]-mean)**2   #On pourrait pondérer en fonction de l'écart des phases
     return var/dispersion
         
-def phase_reconstruction_diagram(times,lightcurve,periods):
+def phase_reconstruction_diagram(times,lightcurve,periods): #Renvoie la liste des valeurs des facteurs de dispersion inverse correspondant à la liste de périodes en entrée
     mean = np.mean(lightcurve)
     phase_disp = [phase_dispersion(phase_folding(times,lightcurve,period)[1],mean) for period in periods]
     return phase_disp
 
-def find_period(periods,phase_disp):
+def find_period(periods,phase_disp):    #Détermine la période pour laquelle l'inverse du facteur de dispersion est maximal
     t,m = max(zip(periods,phase_disp), key=(lambda x: x[1]))
     return t
 
-def truncate(times,lightcurve,prop):
+def truncate(times,lightcurve,prop):    #Rééchantillone un jeu de données en choisissant aléatoirement une proportion donnée de ses valeurs
     n=len(times)
     sample = rd.sample(list(zip(times,lightcurve)),int(n*prop))
     sample.sort(key=(lambda x: x[0]))
     return [a for a,b in sample],[b for a,b in sample]
-"""
-duration = 5
-f_sample = 400
-times = np.linspace(0,duration,num=duration*f_sample)
-f = 20
-w = 2*pi*f
-"""
-plt.plot(times,lightcurve)
 
-#lightcurve = [np.sin(w*t)+0.2*rd.random() for t in times]
+
+#Plot des courbes de lumière
+plt.plot(times,lightcurve,color='r')
 times_test,lightcurve_test = truncate(times,lightcurve,0.1)
-lightcurve_test = [val+0.01*(rd.random()-1/2) for val in lightcurve_test]
-plt.plot(times_test,lightcurve_test)
-
+lightcurve_test = [val+0.02*(rd.random()-1/2) for val in lightcurve_test]
+plt.xlabel('Temps (s)')
+plt.ylabel('Intensité lumineuse relative')
+plt.plot(times_test,lightcurve_test,color='b')
 plt.show()
 
+#Calcul de la meileure période
 log_periods = [k/100 for k in range(-200,0)]
 periods = [10**l for l in log_periods]
 freqs = [1/t for t in periods]
+#Méthode de Lafler-Kinman
 phase_disp = phase_reconstruction_diagram(times_test,lightcurve_test,periods)
-plt.plot(freqs,normalize(phase_disp),color='b')
-
+prm, = plt.plot(freqs,normalize(phase_disp),color='b')
+#Méthode de Lomb-Scargle
 phase_disp_ls = lombscargle(times_test,lightcurve_test,[2*pi/t for t in periods])
-plt.plot(freqs,normalize(phase_disp_ls),color='r')
-
+ls, = plt.plot(freqs,normalize(phase_disp_ls),color='r')
+#Combinaison
 combine = [a*b for (a,b) in zip(phase_disp,phase_disp_ls)]
-plt.plot(freqs,normalize(combine),color='g')
+tot, = plt.plot(freqs,normalize(combine),color='g')
+#Affichage
 plt.xscale('log')
+plt.xlabel('Fréquence (Hz)')
+plt.legend([prm,ls,tot],['Lafler-Kinman','Lomb-Scargle','Combinaison'])
 plt.show()
 
+#Plot du diagramme de phase correspondant à la meilleure période
 t = find_period(periods,combine)
 plt.plot(*phase_folding(times_test,lightcurve_test,t),color='b')
 plt.plot(*phase_folding(times,lightcurve,t),color='r')
+plt.xlabel('Phase')
+plt.ylabel('Intesité lumineuse relative')
 plt.show()
 
 
